@@ -1,9 +1,5 @@
 # 🧬 Rust Livestock Genetics & Breeder Simulator
 
-![Rust Update](https://shields.io)
-![Hospedagem](https://shields.io)
-![Idiomas](https://shields.io)
-
 Um simulador web moderno, leve e responsivo feito especificamente para a mecânica de criação e genética de animais do **Livestock Update** do Rust. Ao contrário das plantas, a reprodução de animais usa um sistema de dominância de cores e mecânicas rígidas de consanguinidade (*Inbreeding*).
 
 ---
