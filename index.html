@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Animal Breeder Simulator</title>
+    <style>
+        body {
+            background-color: #1e1e24;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #cd412b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background-color: #2a2a35;
+            border: 2px solid #3f3f4e;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #cd412b;
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .gene-select-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .gene-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #22222b;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .gene-label {
+            font-weight: bold;
+            width: 120px;
+        }
+        select {
+            background-color: #333344;
+            color: white;
+            border: 1px solid #555566;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 140px;
+        }
+        select:focus {
+            outline: none;
+            border-color: #cd412b;
+        }
+        .input-number {
+            background-color: #333344;
+            color: white;
+            border: 1px solid #555566;
+            padding: 6px;
+            border-radius: 4px;
+            width: 60px;
+            text-align: center;
+        }
+        .btn-container {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #cd412b;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            background-color: #b13420;
+        }
+        .result-card {
+            grid-column: 1 / -1;
+            background-color: #2a2a35;
+            border: 2px solid #4a5568;
+        }
+        .outcome-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .outcome-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e1e24;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 5px solid #718096;
+        }
+        .outcome-row.green-gene { border-left-color: #48bb78; }
+        .outcome-row.red-gene { border-left-color: #f56565; }
+        .outcome-row.grey-gene { border-left-color: #a0aec0; }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .badge-green { background-color: #2f855a; color: #c6f6d5; }
+        .badge-red { background-color: #9b2c2c; color: #fed7d7; }
+        .badge-grey { background-color: #4a5568; color: #e2e8f0; }
+        
+        .inbreed-warning {
+            background-color: #742a2a;
+            color: #fff5f5;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: bold;
+            border: 1px solid #f56565;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Rust Animal Breeder Calculator</h1>
+    
+    <div class="grid">
+        <!-- PAI (MALE) -->
+        <div class="card">
+            <div class="card-title">
+                <span>Pai (Macho)</span>
+                <label style="font-size: 0.9rem; font-weight: normal;">ID Rebanho: 
+                    <input type="number" id="herd-father" class="input-number" value="1" min="1">
+                </label>
+            </div>
+            <div class="gene-select-group">
+                <div class="gene-row">
+                    <span class="gene-label">Esterco (D)</span>
+                    <select id="f-d">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Longevidade (L)</span>
+                    <select id="f-l">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Rendimento (Y)</span>
+                    <select id="f-y">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Fertilidade (F)</span>
+                    <select id="f-f">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Resistência (H)</span>
+                    <select id="f-h">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÃE (FEMALE) -->
+        <div class="card">
+            <div class="card-title">
+                <span>Mãe (Fêmea)</span>
+                <label style="font-size: 0.9rem; font-weight: normal;">ID Rebanho: 
+                    <input type="number" id="herd-mother" class="input-number" value="2" min="1">
+                </label>
+            </div>
+            <div class="gene-select-group">
+                <div class="gene-row">
+                    <span class="gene-label">Esterco (D)</span>
+                    <select id="m-d">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Longevidade (L)</span>
+                    <select id="m-l">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Rendimento (Y)</span>
+                    <select id="m-y">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Fertilidade (F)</span>
+                    <select id="m-f">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+                <div class="gene-row">
+                    <span class="gene-label">Resistência (H)</span>
+                    <select id="m-h">
+                        <option value="green">Verde (Bom)</option>
+                        <option value="grey">Cinza (Neutro)</option>
+                        <option value="red">Vermelho (Ruim)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button onclick="calculateGenetics()">Simular Cruzamento</button>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div class="card result-card">
+            <div class="card-title">Previsão do Filhote (Probabilidades)</div>
+            <div id="inbreed-alert" class="inbreed-warning">
+                ⚠️ DETECTADO INBREEDING (CONSANGUINIDADE)! Os genes herdados sofrerão penalidades severas nos multiplicadores e a longevidade será drasticamente reduzida.
+            </div>
+            <div class="outcome-box" id="results-output">
+                <p style="text-align: center; color: #a0aec0;">Selecione os genes dos pais e clique em simular.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateGenetics() {
+        const hFather = parseInt(document.getElementById('herd-father').value) || 1;
+        const hMother = parseInt(document.getElementById('herd-mother').value) || 2;
+        const isInbred = (hFather === hMother);
+
+        // Exibir aviso de inbreeding
+        document.getElementById('inbreed-alert').style.display = isInbred ? 'block' : 'none';
+
+        const genes = [
+            { key: 'd', name: 'Esterco (D)' },
+            { key: 'l', name: 'Longevidade (L)' },
+            { key: 'y', name: 'Rendimento (Y)' },
+            { key: 'f', name: 'Fertilidade (F)' },
+            { key: 'h', name: 'Resistência (H)' }
+        ];
+
+        let html = '';
+
+        genes.forEach(gene => {
+            const gFather = document.getElementById(`f-${gene.key}`).value;
+            const gMother = document.getElementById(`m-${gene.key}`).value;
+
+            // Mapeamento de probabilidade simplificado com base no peso das cores dominantes
+            let pool = [gFather, gMother];
+            
+            // Contagem
+            let counts = { green: 0, grey: 0, red: 0 };
+            pool.forEach(color => counts[color]++);
+
+            let probHtml = '';
+            
+            // Se forem iguais, 100% daquela cor
+            if (gFather === gMother) {
+                let badgeClass = gFather === 'green' ? 'badge-green' : (gFather === 'red' ? 'badge-red' : 'badge-grey');
+                let colorText = gFather === 'green' ? 'Verde' : (gFather === 'red' ? 'Vermelho' : 'Cinza');
+                if (isInbred) {
+                    probHtml = `<span class="badge ${badgeClass}">100% ${colorText} (Penalizado por Consanguinidade)</span>`;
+                } else {
+                    probHtml = `<span class="badge ${badgeClass}">100% ${colorText}</span>`;
+                }
+            } else {
+                // 50% de chance para cada um se forem diferentes
+                let textFather = gFather === 'green' ? 'Verde' : (gFather === 'red' ? 'Vermelho' : 'Cinza');
+                let textMother = gMother === 'green' ? 'Verde' : (gMother === 'red' ? 'Vermelho' : 'Cinza');
+                let badgeFather = gFather === 'green' ? 'badge-green' : (gFather === 'red' ? 'badge-red' : 'badge-grey');
+                let badgeMother = gMother === 'green' ? 'badge-green' : (gMother === 'red' ? 'badge-red' : 'badge-grey');
+
+                probHtml = `
+                    <span class="badge ${badgeFather}">50% ${textFather} (Pai)</span>
+                    <span style="margin: 0 5px;">/</span>
+                    <span class="badge ${badgeMother}">50% ${textMother} (Mãe)</span>
+                `;
+            }
+
+            // Define classe visual da linha com base no melhor cenário ou mistura
+            let rowClass = 'grey-gene';
+            if (counts.green > 0 && counts.red === 0) rowClass = 'green-gene';
+            if (counts.red > 0 && counts.green === 0) rowClass = 'red-gene';
+
+            html += `
+                <div class="outcome-row ${rowClass}">
+                    <span style="font-weight: bold;">${gene.name}</span>
+                    <div>${probHtml}</div>
+                </div>
+            `;
+        });
+
+        document.getElementById('results-output').innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
