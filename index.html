@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rust Livestock Genetics & Breeder Simulator</title>
-    <!-- Vinculando o arquivo de estilo CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- Biblioteca OCR Gratuita -->
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
 
@@ -33,9 +34,14 @@
         <!-- Pai -->
         <div class="parent-box">
             <h3 id="lbl-father">Father (Sire)</h3>
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom: 10px;">
                 <label>Herd ID (ID do Rebanho)</label>
                 <input type="number" id="father-herd" value="1" min="1">
+            </div>
+            <!-- Upload do Print do Pai -->
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label class="upload-label" id="lbl-upload-f">📸 Scan Screenshot (Pai)</label>
+                <input type="file" id="upload-father" accept="image/*" onchange="scanScreenshot('father')">
             </div>
             <div id="father-genes"></div>
         </div>
@@ -43,9 +49,14 @@
         <!-- Mãe -->
         <div class="parent-box">
             <h3 id="lbl-mother">Mother (Dam)</h3>
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom: 10px;">
                 <label>Herd ID (ID do Rebanho)</label>
                 <input type="number" id="mother-herd" value="2" min="1">
+            </div>
+            <!-- Upload do Print da Mãe -->
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label class="upload-label" id="lbl-upload-m">📸 Scan Screenshot (Mãe)</label>
+                <input type="file" id="upload-mother" accept="image/*" onchange="scanScreenshot('mother')">
             </div>
             <div id="mother-genes"></div>
         </div>
@@ -60,7 +71,6 @@
     </div>
 </div>
 
-<!-- Vinculando o arquivo de lógica JavaScript -->
 <script src="script.js"></script>
 </body>
 </html>
