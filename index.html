@@ -16,6 +16,14 @@
         <button class="lang-btn" onclick="toggleLanguage()">PT / EN</button>
     </header>
 
+    <!-- Painel de Transmissão da Tela -->
+    <div class="stream-panel" style="background: #252525; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center; border: 1px dashed #444;">
+        <button class="btn-calc" id="btn-share" onclick="startScreenCapture()" style="margin-top: 0; width: auto; display: inline-block; padding: 10px 20px;">🖥️ Link Rust Window (Espelhar Jogo)</button>
+        <video id="web-stream" autoplay playsinline style="display: none;"></video>
+        <canvas id="capture-canvas" style="display: none;"></canvas>
+        <p id="stream-status" style="font-size: 12px; color: #aaa; margin-top: 10px; margin-bottom: 0;">Status: Not connected to game window.</p>
+    </div>
+
     <div class="setup-row">
         <div class="form-group">
             <label id="lbl-animal">Animal Type</label>
@@ -38,11 +46,7 @@
                 <label>Herd ID (ID do Rebanho)</label>
                 <input type="number" id="father-herd" value="1" min="1">
             </div>
-            <!-- Upload do Print do Pai -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label class="upload-label" id="lbl-upload-f">📸 Scan Screenshot (Pai)</label>
-                <input type="file" id="upload-father" accept="image/*" onchange="scanScreenshot('father')">
-            </div>
+            <button class="lang-btn" id="btn-capture-f" onclick="captureFromStream('father')" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>📸 Capture Father Genes</button>
             <div id="father-genes"></div>
         </div>
 
@@ -53,11 +57,7 @@
                 <label>Herd ID (ID do Rebanho)</label>
                 <input type="number" id="mother-herd" value="2" min="1">
             </div>
-            <!-- Upload do Print da Mãe -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label class="upload-label" id="lbl-upload-m">📸 Scan Screenshot (Mãe)</label>
-                <input type="file" id="upload-mother" accept="image/*" onchange="scanScreenshot('mother')">
-            </div>
+            <button class="lang-btn" id="btn-capture-m" onclick="captureFromStream('mother')" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>📸 Capture Mother Genes</button>
             <div id="mother-genes"></div>
         </div>
     </div>
