@@ -9,11 +9,16 @@ const i18n = {
         stats: {
             D: { G: "Every 12.5 min", Y: "Every 25 min", R: "Every 37.5 min" },
             L: { normal: { G: "72 Hours", Y: "48 Hours", R: "31 Hours" }, inbred: { G: "50.4 Hours", Y: "33.6 Hours", R: "21.6 Hours" } },
-            cowY: { G: "38 Milk/hr", Y: "12 Milk/hr", R: "7 Milk/hr" },
-            sheepY: { G: "307 Wool/hr", Y: "120 Wool/hr", R: "43 Wool/hr" },
+            cowY: { G: "38 Milk/hr + High Quality Cream", Y: "12 Milk/hr + Standard Cream", R: "7 Milk/hr" },
+            sheepY: { G: "307 Wool/hr (Max Rugs)", Y: "120 Wool/hr", R: "43 Wool/hr" },
             F: { G: "Fast (41m)", Y: "Normal (1h 6m)", R: "Slow (1h 42m)" },
             H: { G: "High Upkeep Tolerance", Y: "Standard", R: "Fragile" }
-        }
+        },
+        scrapEstimation: "Estimated Ranch Sale Value",
+        scrapUnit: "Scrap",
+        cookingBuffs: "Cooking & Buffs Potential",
+        cowBuff: "🥛 Ideal for Teas/Pies. High Y triggers procedural spots on skin.",
+        sheepBuff: "✂️ High Wool production for Beds/Armor crafting."
     },
     pt: {
         title: "Simulador de Genética de Animais - Rust", lblAnimal: "Tipo de Animal", lblInfo: "Recurso Principal",
@@ -24,11 +29,16 @@ const i18n = {
         stats: {
             D: { G: "A cada 12.5 min", Y: "A cada 25 min", R: "A cada 37.5 min" },
             L: { normal: { G: "72 Horas", Y: "48 Horas", R: "31 Horas" }, inbred: { G: "50.4 Horas", Y: "33.6 Horas", R: "21.6 Horas" } },
-            cowY: { G: "38 Leite/h", Y: "12 Leite/h", R: "7 Leite/h" },
-            sheepY: { G: "307 Lã/h", Y: "120 Lã/h", R: "43 Lã/h" },
+            cowY: { G: "38 Leite/h + Creme de Alta Qualidade", Y: "12 Leite/h + Creme Padrão", R: "7 Leite/h" },
+            sheepY: { G: "307 Lã/h (Máx Tapetes)", Y: "120 Lã/h", R: "43 Lã/h" },
             F: { G: "Rápido (41m)", Y: "Normal (1h 6m)", R: "Lento (1h 42m)" },
             H: { G: "Alta Tolerância", Y: "Padrão", R: "Frágil" }
-        }
+        },
+        scrapEstimation: "Valor Estimado de Venda no Rancho",
+        scrapUnit: "Scrap",
+        cookingBuffs: "Potencial de Culinária & Buffs",
+        cowBuff: "🥛 Ideal para Chás Cremosos/Tortas. Y Alto gera manchas procedurais na pele.",
+        sheepBuff: "✂️ Produção massiva de Lã para confecção de Camas/Armaduras."
     }
 };
 
@@ -86,12 +96,21 @@ function simulateBreeding() {
     const resultsList = document.getElementById('results-list');
     resultsList.innerHTML = '';
 
+    let totalScrapMin = 0;
+    let totalScrapMax = 0;
+
     genesList.forEach(gene => {
         const fVal = document.getElementById(`father-genes-${gene}`).value;
         const mVal = document.getElementById(`mother-genes-${gene}`).value;
         let pool = [fVal, mVal];
         let counts = { G: 0, Y: 0, R: 0 };
         pool.forEach(v => counts[v] = (counts[v] || 0) + 50);
+
+        // Lógica de cálculo do Scrap baseado em commits de balanceamento
+        // Genes verdes dão mais valor, vermelhos desvalorizam o bicho no NPC
+        if (counts.G > 0) { totalScrapMin += (counts.G / 100) * 45; totalScrapMax += (counts.G / 100) * 60; }
+        if (counts.Y > 0) { totalScrapMin += (counts.Y / 100) * 20; totalScrapMax += (counts.Y / 100) * 30; }
+        if (counts.R > 0) { totalScrapMin += (counts.R / 100) * 5;  totalScrapMax += (counts.R / 100) * 10; }
 
         const getStatValue = (g, type) => {
             const langStats = i18n[currentLang].stats;
@@ -117,10 +136,36 @@ function simulateBreeding() {
         `;
         resultsList.appendChild(item);
     });
+
+    // Se houver consanguinidade, o valor de venda cai pela metade
+    if (isInbred) {
+        totalScrapMin = Math.floor(totalScrapMin * 0.5);
+        totalScrapMax = Math.floor(totalScrapMax * 0.5);
+    }
+
+    // Criar o bloco de utilitários extras (Preço e Culinária)
+    const extraBox = document.createElement('div');
+    extraBox.style.marginTop = '20px';
+    extraBox.style.borderTop = '1px solid #333';
+    extraBox.style.paddingTop = '15px';
+
+    const buffText = animalType === 'cow' ? i18n[currentLang].cowBuff : i18n[currentLang].sheepBuff;
+
+    extraBox.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-weight: bold; color: #ffa726;">💰 ${i18n[currentLang].scrapEstimation}:</span>
+            <span style="font-weight: bold; color: #66bb6a;">${Math.floor(totalScrapMin)} - ${Math.floor(totalScrapMax)} ${i18n[currentLang].scrapUnit}</span>
+        </div>
+        <div style="margin-top: 10px;">
+            <div style="font-weight: bold; color: #4fc3f7; margin-bottom: 5px;">🍳 ${i18n[currentLang].cookingBuffs}:</div>
+            <small style="color: #ccc;">${buffText}</small>
+        </div>
+    `;
+    resultsList.appendChild(extraBox);
+
     document.getElementById('results').style.display = 'block';
 }
 
-// Iniciar scripts ao carregar a página
 window.onload = function() {
     renderGeneSelectors();
     updateAnimalInfo();
