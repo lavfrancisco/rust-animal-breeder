@@ -16,18 +16,18 @@
         <button class="lang-btn" onclick="toggleLanguage()">PT / EN</button>
     </header>
 
-    <!-- ⚠️ PAINEL DE REQUISITOS DO JOGO -->
+    <!-- PAINEL DE REQUISITOS DO JOGO -->
     <div id="requirements-panel" style="background: rgba(255, 167, 38, 0.15); border: 1px solid #ffa726; color: #ffe082; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px;">
-        <strong id="req-title" style="color: #ffa726; display: block; margin-bottom: 5px;">⚠️ GAME CONFIGURATION REQUIRED FOR CAPTURE:</strong>
+        <strong id="req-title" style="color: #ffa726; display: block; margin-bottom: 5px;">GAME CONFIGURATION REQUIRED FOR CAPTURE:</strong>
         <ul style="margin: 0; padding-left: 20px; line-height: 1.6;">
-            <li id="req-scale">Set your <strong>UI Scale to 1.0 (100%)</strong> in Options > User Interface.</li>
-            <li id="req-lang">Change game language to <strong>English</strong> (needed for OCR text identification).</li>
+            <li id="req-scale">Set your UI Scale to 1.0 (100%) in Options > User Interface.</li>
+            <li id="req-lang">Change game language to English (needed for OCR text identification).</li>
         </ul>
     </div>
 
     <!-- Painel de Transmissão da Tela -->
     <div class="stream-panel" style="background: #252525; padding: 15px; border-radius: 6px; margin-bottom: 20px; text-align: center; border: 1px dashed #444;">
-        <button class="btn-calc" id="btn-share" onclick="startScreenCapture()" style="margin-top: 0; width: auto; display: inline-block; padding: 10px 20px;">🖥️ Link Rust Window (Espelhar Jogo)</button>
+        <button class="btn-calc" id="btn-share" onclick="startScreenCapture()">Link Rust Window (Espelhar Jogo)</button>
         <video id="web-stream" autoplay playsinline style="display: none;"></video>
         <canvas id="capture-canvas" style="display: none;"></canvas>
         <p id="stream-status" style="font-size: 12px; color: #aaa; margin-top: 10px; margin-bottom: 0;">Status: Not connected to game window.</p>
@@ -55,7 +55,7 @@
                 <label>Herd ID (ID do Rebanho)</label>
                 <input type="number" id="father-herd" value="1" min="1">
             </div>
-            <button class="lang-btn" id="btn-capture-f" onclick="captureFromStream('father')" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>📸 Capture Father Genes</button>
+            <button class="lang-btn" id="btn-capture-f" onclick="captureFromStream('father')" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>Capture Father Genes</button>
             <div id="father-genes"></div>
         </div>
 
@@ -66,7 +66,7 @@
                 <label>Herd ID (ID do Rebanho)</label>
                 <input type="number" id="mother-herd" value="2" min="1">
             </div>
-            <button class="lang-btn" id="btn-capture-m" onclick="captureFromStream('mother')" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>📸 Capture Mother Genes</button>
+            <button class="lang-btn" id="btn-capture-m" onclick="captureFromStream('mother')" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>Capture Mother Genes</button>
             <div id="mother-genes"></div>
         </div>
     </div>
@@ -78,6 +78,11 @@
         <h2 id="lbl-results-title">Offspring Genetic Probabilities</h2>
         <div id="results-list"></div>
     </div>
+
+    <!-- Indicador de Versão Oficial -->
+    <footer style="margin-top: 30px; text-align: center; font-size: 11px; color: #555; border-top: 1px solid #222; padding-top: 15px;">
+        Rust Livestock Genetics & Breeder Simulator &bull; <span style="color: #cd412b; font-weight: bold;">v1.2.0</span>
+    </footer>
 </div>
 
 <script src="script.js"></script>
