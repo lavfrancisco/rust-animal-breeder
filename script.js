@@ -1,4 +1,7 @@
 const genesList = ['D', 'L', 'Y', 'F', 'H'];
+let localStream = null;
+let currentLang = 'pt';
+
 const i18n = {
     en: {
         title: "Rust Animal Genetics Simulator", lblAnimal: "Animal Type", lblInfo: "Expected Main Resource",
@@ -17,7 +20,9 @@ const i18n = {
         scrapEstimation: "Estimated Ranch Sale Value", scrapUnit: "Scrap", cookingBuffs: "Cooking & Buffs Potential",
         cowBuff: "🥛 Ideal for Teas/Pies. High Y triggers procedural spots on skin.",
         sheepBuff: "✂️ High Wool production for Beds/Armor crafting.",
-        scanning: "Scanning image... Please wait.", scanDone: "Scan complete!", scanError: "Could not read genes. Setting defaults."
+        scanning: "Analyzing current live frame... Please wait.", scanDone: "Capture complete!", scanError: "Could not read genes.",
+        statusConnected: "Connected to Rust Window. Click capture buttons below when looking at the animal.",
+        statusDisconnected: "Status: Not connected to game window."
     },
     pt: {
         title: "Simulador de Genética de Animais - Rust", lblAnimal: "Tipo de Animal", lblInfo: "Recurso Principal",
@@ -36,11 +41,11 @@ const i18n = {
         scrapEstimation: "Valor Estimado de Venda no Rancho", scrapUnit: "Scrap", cookingBuffs: "Potencial de Culinária & Buffs",
         cowBuff: "🥛 Ideal para Chás Cremosos/Tortas. Y Alto gera manchas procedurais na pele.",
         sheepBuff: "✂️ Produção massiva de Lã para confecção de Camas/Armaduras.",
-        scanning: "Escaneando imagem... Por favor aguarde.", scanDone: "Escaneamento concluído!", scanError: "Não foi possível ler os genes. Aplicando padrões."
+        scanning: "Analisando frame em tempo real... Aguarde.", scanDone: "Captura concluída!", scanError: "Não foi possível ler os genes.",
+        statusConnected: "Conectado à Janela do Rust. Use os botões abaixo quando estiver olhando o menu do animal.",
+        statusDisconnected: "Status: Não conectado à janela do jogo."
     }
 };
-
-let currentLang = 'pt';
 
 function renderGeneSelectors() {
     const createSelectors = (divId) => {
@@ -64,22 +69,50 @@ function renderGeneSelectors() {
     createSelectors('father-genes');
     createSelectors('mother-genes');
 }
-function scanScreenshot(parentType) {
-    const fileInput = document.getElementById(`upload-${parentType}`);
-    if (!fileInput.files || fileInput.files.length === 0) return;
 
-    const label = document.getElementById(`lbl-upload-${parentType === 'father' ? 'f' : 'm'}`);
-    const originalText = label.innerText;
-    label.innerText = i18n[currentLang].scanning;
-
-    Tesseract.recognize(
-        fileInput.files[0],
-        'eng',
-        { logger: m => console.log(m) }
-    ).then(({ data: { text } }) => {
-        label.innerText = i18n[currentLang].scanDone;
-        setTimeout(() => { label.innerText = originalText; }, 3000);
+// Inicia a captura de tela nativa do navegador
+async function startScreenCapture() {
+    try {
+        localStream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: "window" },
+            audio: false
+        });
+        const video = document.getElementById('web-stream');
+        video.srcObject = localStream;
         
+        document.getElementById('stream-status').innerText = i18n[currentLang].statusConnected;
+        document.getElementById('btn-capture-f').disabled = false;
+        document.getElementById('btn-capture-m').disabled = false;
+    } catch (err) {
+        console.error("Error capturing screen: " + err);
+        document.getElementById('stream-status').innerText = i18n[currentLang].statusDisconnected;
+    }
+}
+
+// Congela o frame do vídeo, extrai uma imagem temporária e manda pro OCR
+function captureFromStream(parentType) {
+    const video = document.getElementById('web-stream');
+    const canvas = document.getElementById('capture-canvas');
+    const btn = document.getElementById(`btn-capture-${parentType === 'father' ? 'f' : 'm'}`);
+    
+    if (!localStream) return;
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Desenha o frame atual do jogo no canvas invisível
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/png');
+
+    const originalText = btn.innerText;
+    btn.innerText = i18n[currentLang].scanning;
+
+    Tesseract.recognize(dataUrl, 'eng').then(({ data: { text } }) => {
+        btn.innerText = i18n[currentLang].scanDone;
+        setTimeout(() => { btn.innerText = originalText; }, 3000);
+
+        // Processa o texto extraído da janela em busca dos padrões de genes
         genesList.forEach((gene) => {
             const dropdown = document.getElementById(`${parentType}-genes-${gene}`);
             if (dropdown) {
@@ -90,7 +123,7 @@ function scanScreenshot(parentType) {
         });
     }).catch(err => {
         console.error(err);
-        label.innerText = i18n[currentLang].scanError;
+        btn.innerText = i18n[currentLang].scanError;
     });
 }
 
@@ -185,5 +218,3 @@ window.onload = function() {
     renderGeneSelectors();
     updateAnimalInfo();
 };
-
-
