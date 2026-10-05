@@ -1,6 +1,6 @@
 const genesList = ['D', 'L', 'Y', 'F', 'H'];
 let localStream = null;
-let currentLang = 'pt';
+let currentLang = 'en'; 
 
 const i18n = {
     en: {
@@ -22,7 +22,10 @@ const i18n = {
         sheepBuff: "✂️ High Wool production for Beds/Armor crafting.",
         scanning: "Analyzing current live frame... Please wait.", scanDone: "Capture complete!", scanError: "Could not read genes.",
         statusConnected: "Connected to Rust Window. Click capture buttons below when looking at the animal.",
-        statusDisconnected: "Status: Not connected to game window."
+        statusDisconnected: "Status: Not connected to game window.",
+        reqTitle: "⚠️ GAME CONFIGURATION REQUIRED FOR CAPTURE:",
+        reqScale: "Set your UI Scale to 1.0 (100%) in Options > User Interface.",
+        reqLang: "Change game language to English (needed for OCR text identification)."
     },
     pt: {
         title: "Simulador de Genética de Animais - Rust", lblAnimal: "Tipo de Animal", lblInfo: "Recurso Principal",
@@ -43,7 +46,10 @@ const i18n = {
         sheepBuff: "✂️ Produção massiva de Lã para confecção de Camas/Armaduras.",
         scanning: "Analisando frame em tempo real... Aguarde.", scanDone: "Captura concluída!", scanError: "Não foi possível ler os genes.",
         statusConnected: "Conectado à Janela do Rust. Use os botões abaixo quando estiver olhando o menu do animal.",
-        statusDisconnected: "Status: Não conectado à janela do jogo."
+        statusDisconnected: "Status: Não conectado à janela do jogo.",
+        reqTitle: "⚠️ CONFIGURAÇÃO DO JOGO OBRIGATÓRIA PARA CAPTURA:",
+        reqScale: "Defina a escala da interface (UI Scale) para 1.0 (100%) em Options > User Interface.",
+        reqLang: "Mude o idioma do jogo para Inglês (necessário para a leitura de texto do scanner)."
     }
 };
 
@@ -70,7 +76,6 @@ function renderGeneSelectors() {
     createSelectors('mother-genes');
 }
 
-// Inicia a captura de tela nativa do navegador
 async function startScreenCapture() {
     try {
         localStream = await navigator.mediaDevices.getDisplayMedia({
@@ -88,8 +93,6 @@ async function startScreenCapture() {
         document.getElementById('stream-status').innerText = i18n[currentLang].statusDisconnected;
     }
 }
-
-// Congela o frame do vídeo, extrai uma imagem temporária e manda pro OCR
 function captureFromStream(parentType) {
     const video = document.getElementById('web-stream');
     const canvas = document.getElementById('capture-canvas');
@@ -100,8 +103,6 @@ function captureFromStream(parentType) {
     const ctx = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
-    // Desenha o frame atual do jogo no canvas invisível
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL('image/png');
 
@@ -112,7 +113,6 @@ function captureFromStream(parentType) {
         btn.innerText = i18n[currentLang].scanDone;
         setTimeout(() => { btn.innerText = originalText; }, 3000);
 
-        // Processa o texto extraído da janela em busca dos padrões de genes
         genesList.forEach((gene) => {
             const dropdown = document.getElementById(`${parentType}-genes-${gene}`);
             if (dropdown) {
@@ -141,6 +141,14 @@ function toggleLanguage() {
     document.getElementById('lbl-mother').innerText = i18n[currentLang].lblMother;
     document.getElementById('btn-simulate').innerText = i18n[currentLang].btnSimulate;
     document.getElementById('lbl-results-title').innerText = i18n[currentLang].lblResultsTitle;
+    
+    document.getElementById('req-title').innerText = i18n[currentLang].reqTitle;
+    document.getElementById('req-scale').innerHTML = i18n[currentLang].reqScale;
+    document.getElementById('req-lang').innerHTML = i18n[currentLang].reqLang;
+    
+    document.getElementById('btn-capture-f').innerText = currentLang === 'en' ? "Capture Father Genes" : "Capturar Genes do Pai";
+    document.getElementById('btn-capture-m').innerText = currentLang === 'en' ? "Capture Mother Genes" : "Capturar Genes da Mãe";
+    
     updateAnimalInfo();
 }
 
@@ -215,6 +223,13 @@ function simulateBreeding() {
 }
 
 window.onload = function() {
-    renderGeneSelectors();
-    updateAnimalInfo();
+    const userLang = navigator.language || navigator.userLanguage;
+    if (userLang.startsWith('pt')) {
+        currentLang = 'pt';
+        currentLang = 'en'; 
+        toggleLanguage();
+    } else {
+        renderGeneSelectors();
+        updateAnimalInfo();
+    }
 };
