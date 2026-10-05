@@ -4,175 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rust Livestock Genetics & Breeder Simulator</title>
-    <style>
-        :root {
-            --bg-dark: #121212;
-            --bg-card: #1e1e1e;
-            --rust-color: #cd412b;
-            --rust-hover: #b03320;
-            --text-main: #e0e0e0;
-            --gene-g: #4caf50;
-            --gene-y: #9e9e9e;
-            --gene-r: #f44336;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            max-width: 900px;
-            width: 100%;
-            background: var(--bg-card);
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border-top: 5px solid var(--rust-color);
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        h1 { margin: 0; font-size: 24px; color: #fff; }
-
-        .lang-btn {
-            background: #333;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .setup-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 600px) {
-            .setup-row { grid-template-columns: 1fr; }
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        label { font-weight: bold; font-size: 14px; color: #aaa; }
-
-        select, input {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 15px;
-        }
-
-        .parents-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .parents-grid { grid-template-columns: 1fr; }
-        }
-
-        .parent-box {
-            background: #252525;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #333;
-        }
-
-        .parent-box h3 { margin-top: 0; color: var(--rust-color); }
-
-        .gene-select-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .gene-label { font-weight: bold; width: 40px; }
-
-        .btn-calc {
-            width: 100%;
-            background: var(--rust-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.2s;
-        }
-
-        .btn-calc:hover { background: var(--rust-hover); }
-
-        .alert-inbred {
-            background: rgba(244, 67, 54, 0.2);
-            border: 1px solid var(--gene-r);
-            color: #ff8a80;
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 15px;
-            display: none;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .results-box {
-            margin-top: 25px;
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #2a2a2a;
-            display: none;
-        }
-
-        .results-box h2 { margin-top: 0; font-size: 20px; }
-
-        .result-item {
-            background: #222;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .gene-badge {
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            color: #000;
-        }
-
-        .badge-g { background-color: var(--gene-g); color: #fff; }
-        .badge-y { background-color: var(--gene-y); }
-        .badge-r { background-color: var(--gene-r); color: #fff; }
-    </style>
+    <!-- Vinculando o arquivo de estilo CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -197,7 +30,7 @@
     </div>
 
     <div class="parents-grid">
-        <!-- Father -->
+        <!-- Pai -->
         <div class="parent-box">
             <h3 id="lbl-father">Father (Sire)</h3>
             <div class="form-group" style="margin-bottom: 15px;">
@@ -207,7 +40,7 @@
             <div id="father-genes"></div>
         </div>
 
-        <!-- Mother -->
+        <!-- Mãe -->
         <div class="parent-box">
             <h3 id="lbl-mother">Mother (Dam)</h3>
             <div class="form-group" style="margin-bottom: 15px;">
@@ -219,7 +52,6 @@
     </div>
 
     <div id="inbred-warning" class="alert-inbred"></div>
-
     <button class="btn-calc" id="btn-simulate" onclick="simulateBreeding()">Simulate Crossbreeding</button>
 
     <div id="results" class="results-box">
@@ -228,69 +60,7 @@
     </div>
 </div>
 
-<script>
-    const genesList = ['D', 'L', 'Y', 'F', 'H'];
-    const i18n = {
-        en: {
-            title: "Rust Animal Genetics Simulator",
-            lblAnimal: "Animal Type",
-            lblInfo: "Expected Main Resource",
-            lblFather: "Father (Sire)",
-            lblMother: "Mother (Dam)",
-            btnSimulate: "Simulate Crossbreeding",
-            lblResultsTitle: "Offspring Genetic Probabilities",
-            inbredWarning: "⚠️ INBREEDING DETECTED! Shared Herd ID reduces longevity and resource output severely.",
-            cowRes: "Milk & Dung",
-            sheepRes: "Wool & Dung",
-            geneNames: { D: "Dung (Esterco)", L: "Longevity", Y: "Yield", F: "Fertility", H: "Hardiness" },
-            stats: {
-                D: { G: "Every 12.5 min", Y: "Every 25 min", R: "Every 37.5 min" },
-                L: { 
-                    normal: { G: "72 Hours", Y: "48 Hours", R: "31 Hours" },
-                    inbred: { G: "50.4 Hours", Y: "33.6 Hours", R: "21.6 Hours" }
-                },
-                cowY: { G: "38 Milk/hr", Y: "12 Milk/hr", R: "7 Milk/hr" },
-                sheepY: { G: "307 Wool/hr", Y: "120 Wool/hr", R: "43 Wool/hr" },
-                F: { G: "Fast Cooldown (41m Female)", Y: "Normal Cooldown (1h 6m)", R: "Slow Cooldown (1h 42m)" },
-                H: { G: "High Upkeep Tolerance", Y: "Standard Tolerance", R: "Fragile Survival" }
-            }
-        },
-        pt: {
-            title: "Simulador de Genética de Animais - Rust",
-            lblAnimal: "Tipo de Animal",
-            lblInfo: "Recurso Principal Esperado",
-            lblFather: "Pai",
-            lblMother: "Mãe",
-            btnSimulate: "Simular Cruzamento",
-            lblResultsTitle: "Probabilidades Genéticas do Filhote",
-            inbredWarning: "⚠️ CONSANGUINIDADE DETECTADA! ID de Rebanho igual reduz drasticamente a longevidade e o rendimento.",
-            cowRes: "Leite e Esterco",
-            sheepRes: "Lã e Esterco",
-            geneNames: { D: "Dung (Esterco)", L: "Longevidade", Y: "Rendimento", F: "Fertilidade", H: "Resistência" },
-            stats: {
-                D: { G: "A cada 12.5 min", Y: "A cada 25 min", R: "A cada 37.5 min" },
-                L: { 
-                    normal: { G: "72 Horas", Y: "48 Horas", R: "31 Horas" },
-                    inbred: { G: "50.4 Horas", Y: "33.6 Horas", R: "21.6 Horas" }
-                },
-                cowY: { G: "38 Leite/h", Y: "12 Leite/h", R: "7 Leite/h" },
-                sheepY: { G: "307 Lã/h", Y: "120 Lã/h", R: "43 Lã/h" },
-                F: { G: "Recarga Rápida (41m Fêmea)", Y: "Recarga Normal (1h 6m)", R: "Recarga Lenta (1h 42m)" },
-                H: { G: "Alta Tolerância à fomes", Y: "Tolerância Padrão", R: "Sobrevivência Frágil" }
-            }
-        }
-    };
-
-    let currentLang = 'pt';
-
-    function renderGeneSelectors() {
-        const createSelectors = (divId) => {
-            const container = document.getElementById(divId);
-            container.innerHTML = '';
-            genesList.forEach(gene => {
-                const row = document.createElement('div');
-                row.className = 'gene-select-row';
-                row.innerHTML = `
-                    <span class="gene-label">${gene}:</span>
-                    <select id="${divId}-${gene}" style="width: 75%;">
-                        <option value="G" style="color: #4caf50;">Green (Good)</option>
+<!-- Vinculando o arquivo de lógica JavaScript -->
+<script src="script.js"></script>
+</body>
+</html>
