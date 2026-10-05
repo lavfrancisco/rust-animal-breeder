@@ -14,11 +14,10 @@ const i18n = {
             F: { G: "Fast (41m)", Y: "Normal (1h 6m)", R: "Slow (1h 42m)" },
             H: { G: "High Upkeep Tolerance", Y: "Standard", R: "Fragile" }
         },
-        scrapEstimation: "Estimated Ranch Sale Value",
-        scrapUnit: "Scrap",
-        cookingBuffs: "Cooking & Buffs Potential",
+        scrapEstimation: "Estimated Ranch Sale Value", scrapUnit: "Scrap", cookingBuffs: "Cooking & Buffs Potential",
         cowBuff: "🥛 Ideal for Teas/Pies. High Y triggers procedural spots on skin.",
-        sheepBuff: "✂️ High Wool production for Beds/Armor crafting."
+        sheepBuff: "✂️ High Wool production for Beds/Armor crafting.",
+        scanning: "Scanning image... Please wait.", scanDone: "Scan complete!", scanError: "Could not read genes. Setting defaults."
     },
     pt: {
         title: "Simulador de Genética de Animais - Rust", lblAnimal: "Tipo de Animal", lblInfo: "Recurso Principal",
@@ -34,11 +33,10 @@ const i18n = {
             F: { G: "Rápido (41m)", Y: "Normal (1h 6m)", R: "Lento (1h 42m)" },
             H: { G: "Alta Tolerância", Y: "Padrão", R: "Frágil" }
         },
-        scrapEstimation: "Valor Estimado de Venda no Rancho",
-        scrapUnit: "Scrap",
-        cookingBuffs: "Potencial de Culinária & Buffs",
+        scrapEstimation: "Valor Estimado de Venda no Rancho", scrapUnit: "Scrap", cookingBuffs: "Potencial de Culinária & Buffs",
         cowBuff: "🥛 Ideal para Chás Cremosos/Tortas. Y Alto gera manchas procedurais na pele.",
-        sheepBuff: "✂️ Produção massiva de Lã para confecção de Camas/Armaduras."
+        sheepBuff: "✂️ Produção massiva de Lã para confecção de Camas/Armaduras.",
+        scanning: "Escaneando imagem... Por favor aguarde.", scanDone: "Escaneamento concluído!", scanError: "Não foi possível ler os genes. Aplicando padrões."
     }
 };
 
@@ -65,6 +63,35 @@ function renderGeneSelectors() {
     };
     createSelectors('father-genes');
     createSelectors('mother-genes');
+}
+function scanScreenshot(parentType) {
+    const fileInput = document.getElementById(`upload-${parentType}`);
+    if (!fileInput.files || fileInput.files.length === 0) return;
+
+    const label = document.getElementById(`lbl-upload-${parentType === 'father' ? 'f' : 'm'}`);
+    const originalText = label.innerText;
+    label.innerText = i18n[currentLang].scanning;
+
+    Tesseract.recognize(
+        fileInput.files[0],
+        'eng',
+        { logger: m => console.log(m) }
+    ).then(({ data: { text } }) => {
+        label.innerText = i18n[currentLang].scanDone;
+        setTimeout(() => { label.innerText = originalText; }, 3000);
+        
+        genesList.forEach((gene) => {
+            const dropdown = document.getElementById(`${parentType}-genes-${gene}`);
+            if (dropdown) {
+                if (text.toUpperCase().includes("GOOD") || text.toUpperCase().includes("GREEN")) dropdown.value = "G";
+                else if (text.toUpperCase().includes("BAD") || text.toUpperCase().includes("RED")) dropdown.value = "R";
+                else dropdown.value = "Y";
+            }
+        });
+    }).catch(err => {
+        console.error(err);
+        label.innerText = i18n[currentLang].scanError;
+    });
 }
 
 function updateAnimalInfo() {
@@ -96,8 +123,7 @@ function simulateBreeding() {
     const resultsList = document.getElementById('results-list');
     resultsList.innerHTML = '';
 
-    let totalScrapMin = 0;
-    let totalScrapMax = 0;
+    let totalScrapMin = 0; let totalScrapMax = 0;
 
     genesList.forEach(gene => {
         const fVal = document.getElementById(`father-genes-${gene}`).value;
@@ -106,8 +132,6 @@ function simulateBreeding() {
         let counts = { G: 0, Y: 0, R: 0 };
         pool.forEach(v => counts[v] = (counts[v] || 0) + 50);
 
-        // Lógica de cálculo do Scrap baseado em commits de balanceamento
-        // Genes verdes dão mais valor, vermelhos desvalorizam o bicho no NPC
         if (counts.G > 0) { totalScrapMin += (counts.G / 100) * 45; totalScrapMax += (counts.G / 100) * 60; }
         if (counts.Y > 0) { totalScrapMin += (counts.Y / 100) * 20; totalScrapMax += (counts.Y / 100) * 30; }
         if (counts.R > 0) { totalScrapMin += (counts.R / 100) * 5;  totalScrapMax += (counts.R / 100) * 10; }
@@ -137,18 +161,10 @@ function simulateBreeding() {
         resultsList.appendChild(item);
     });
 
-    // Se houver consanguinidade, o valor de venda cai pela metade
-    if (isInbred) {
-        totalScrapMin = Math.floor(totalScrapMin * 0.5);
-        totalScrapMax = Math.floor(totalScrapMax * 0.5);
-    }
+    if (isInbred) { totalScrapMin = Math.floor(totalScrapMin * 0.5); totalScrapMax = Math.floor(totalScrapMax * 0.5); }
 
-    // Criar o bloco de utilitários extras (Preço e Culinária)
     const extraBox = document.createElement('div');
-    extraBox.style.marginTop = '20px';
-    extraBox.style.borderTop = '1px solid #333';
-    extraBox.style.paddingTop = '15px';
-
+    extraBox.style.marginTop = '20px'; extraBox.style.borderTop = '1px solid #333'; extraBox.style.paddingTop = '15px';
     const buffText = animalType === 'cow' ? i18n[currentLang].cowBuff : i18n[currentLang].sheepBuff;
 
     extraBox.innerHTML = `
@@ -162,7 +178,6 @@ function simulateBreeding() {
         </div>
     `;
     resultsList.appendChild(extraBox);
-
     document.getElementById('results').style.display = 'block';
 }
 
@@ -170,3 +185,5 @@ window.onload = function() {
     renderGeneSelectors();
     updateAnimalInfo();
 };
+
+
